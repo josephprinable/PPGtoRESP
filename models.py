@@ -34,10 +34,10 @@ def DRIB(tensor_input,filters,kernel_size=1,pooling_size=1,dropout=0.5):
     return out
 
 def unet(pretrained_weights = None,input_size = (200,1),windowSize=200):
-    # This is the top level defines the UNET architecture
+    # This is the top level, defines the UNET architecture.
     
     inputs = Input(input_size)
-    n=1 # 7number of filters. This should be pushed back to a parameter.
+    n=1 # number of filters. 
     
     conv0 = Conv1D(filters=int(1*n), kernel_size=1, strides=1, padding="same")(inputs)               
     bn0 = BatchNormalization()(conv0)
@@ -66,19 +66,16 @@ def unet(pretrained_weights = None,input_size = (200,1),windowSize=200):
     conv6 = Conv1D(filters=int(128*n), kernel_size=1, strides=1, padding="same")(r5)               
     
     drib1 = DRIB(conv6,128*n)
-    print('drib1 conv5', drib1.get_shape(), conv5.get_shape())
     u1 = concatenate([drib1, conv5])
     c1 = Conv1D( filters=int(64*n), kernel_size=1, strides=1, activation = 'relu')(u1) #, activation = 'sigmoid'
     
     drib2 = DRIB(c1,64*n)
     u2 = UpSampling1D(size = 2)(drib2)
-    print('u2 conv4', u2.get_shape(), conv4.get_shape())
     u2 = concatenate([u2, conv4])
     c2 = Conv1D( filters=int(32*n), kernel_size=1, strides=1, activation = 'relu')(u2) #, activation = 'sigmoid'
     
     drib3 = DRIB(c2,32*n)
     u3 = UpSampling1D(size = 2)(drib3)
-    print('u3 conv3', u3.get_shape(), conv3.get_shape())
     u3 = concatenate([u3, conv3])
     c3 = Conv1D( filters=int(16*n), kernel_size=1, strides=1, activation = 'relu')(u3)
     
@@ -92,7 +89,6 @@ def unet(pretrained_weights = None,input_size = (200,1),windowSize=200):
     u5 = concatenate([u5, conv1])
     c5 = Conv1D( filters=int(8*n), kernel_size=1, strides=1, activation = 'relu')(u5)    
     
-    #drib5 = DRIB(c7,8*n)
     u10 = UpSampling1D(size = 2)(c5)
     c10 = Conv1D( filters=int(1), kernel_size=1, strides=1, activation = 'relu')(u10) #, activation='sigmoid'
 
